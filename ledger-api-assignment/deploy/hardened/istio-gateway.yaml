@@ -1,0 +1,18 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: ledger-gateway
+  namespace: payments
+spec:
+  selector:
+    istio: ingressgateway # default istio ingressgateway
+  servers:
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      credentialName: ledger-cert # In a real environment, this secret holds the TLS certificate
+    hosts:
+    - "ledger.example.com"
