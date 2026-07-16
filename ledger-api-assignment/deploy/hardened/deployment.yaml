@@ -23,7 +23,7 @@ spec:
         fsGroup: 2000
       containers:
         - name: ledger-api
-          image: ghcr.io/sahal6282/dodo_assignment-ledger-api:0fb539c8
+          image: ghcr.io/sahal6282/dodo_assignment-ledger-api:5c85699c
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
