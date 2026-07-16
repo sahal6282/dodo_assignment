@@ -45,4 +45,4 @@ graph TD
 * Full finding chain and remediation mapping in the Task 4 Pentest Report.
 
 ## Getting Started
-Each task directory (`task1/`, `task2/`, `task3/`, `task4/`) contains its own detailed `README.md` explaining the implementation rationale, architectural choices, and verification screenshots.
+Each task directory (`task1/`, `task2/`, `task3/`) contains its own detailed `README.md` explaining the implementation rationale, architectural choices, and verification screenshots. The `task4/` directory contains the standalone comprehensive Vulnerability & OSINT Penetration Test Report as a PDF.
