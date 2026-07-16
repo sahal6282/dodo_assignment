@@ -28,10 +28,13 @@ We implemented a **Default-Deny** `AuthorizationPolicy` across the entire `payme
 
 We created an explicit `ALLOW` rule that permits the `reporting-service` to talk to the `ledger-api`. This rule is keyed strictly on the `reporting-sa` SPIFFE ID.
 
+#### 1. mTLS STRICT Mode Enforcement
 ![mTLS STRICT Mode](1.png)
 
+#### 2. Authorized Service Curl Success
 ![Authorized Service Curl Success](2.png)
 
+#### 3. Unauthorized Pod Blocked by RBAC
 ![Unauthorized Pod Blocked by RBAC](3.png)
 
 ---
