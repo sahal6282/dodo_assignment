@@ -117,3 +117,7 @@ jobs:
           git add ledger-api-assignment/deploy/hardened/deployment.yaml
           git commit -m "GitOps: Update ledger-api image to ${{ env.IMAGE_TAG }}"
           git push
+
+      - name: Verify Image Signature (Proof for Assignment)
+        run: |
+          cosign verify --certificate-oidc-issuer https://token.actions.githubusercontent.com --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/secure-pipeline.yml@refs/heads/main" ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
