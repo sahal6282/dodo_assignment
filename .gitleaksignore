@@ -1,0 +1,7 @@
+[allowlist]
+description = "Ignore intentional secrets used for the assignment demonstration and false positives in encrypted files."
+paths = [
+    '''ledger-api-assignment/deploy/hardened/sealed-secret.yaml''',
+    '''ledger-api-assignment/deploy/deployment.yaml''',
+    '''ledger-api-assignment/deploy/hardened/secret-template.yaml'''
+]
