@@ -16,6 +16,7 @@ spec:
           namespaces:
             - argocd
             - kube-system
+            - istio-system
       validate:
         message: "Running as root is not allowed. Set runAsNonRoot to true."
         pattern:
@@ -44,6 +45,7 @@ spec:
           namespaces:
             - argocd
             - kube-system
+            - istio-system
       validate:
         message: "Using image tag ':latest' is not allowed."
         pattern:
