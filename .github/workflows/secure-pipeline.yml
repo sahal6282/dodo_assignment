@@ -1,0 +1,119 @@
+name: Secure CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'ledger-api-assignment/deploy/**' # Ignore GitOps updates to prevent infinite loops
+      - '**.md'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}-ledger-api
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write # Required for Cosign keyless signing
+  security-events: write # Required for SARIF upload
+
+jobs:
+  sast-and-secrets:
+    name: Source Code Scans
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gitleaks (Secrets Scan)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Gitleaks automatically hard-blocks (exits non-zero) if secrets are found
+
+      - name: Semgrep (SAST)
+        uses: returntocorp/semgrep-action@v1
+        with:
+          generateSarif: "1"
+        # Semgrep hard-blocks by default on High severity findings
+        
+      - name: Upload Semgrep SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
+          category: semgrep
+
+  build-scan-sign-deploy:
+    name: Build, Scan, Sign, & Update GitOps
+    needs: sast-and-secrets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set Image Tag
+        id: vars
+        run: echo "IMAGE_TAG=${GITHUB_SHA::8}" >> $GITHUB_ENV
+
+      - name: Log into GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker Image (ledger-api)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./ledger-api-assignment/app
+          push: false
+          load: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+
+      - name: Run Trivy Vulnerability Scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+          category: trivy
+
+      - name: Push Image to GHCR
+        run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.4.0
+
+      - name: Sign Image with Cosign (Keyless)
+        run: cosign sign --yes ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+
+      - name: Generate SLSA Provenance Attestation
+        run: |
+          # A simple custom attestation payload for the sake of the assignment
+          echo '{"builder":{"id":"https://github.com/actions/runner"},"buildType":"https://actions.github.io/buildtypes/workflow/v1"}' > predicate.json
+          cosign attest --yes --predicate predicate.json --type slsaprovenance ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+
+      - name: Update GitOps Manifest (ArgoCD trigger)
+        run: |
+          # Replace the image tag in our Kubernetes deployment manifest
+          sed -i "s|image: .*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}|g" ledger-api-assignment/deploy/hardened/deployment.yaml
+          
+          git config --global user.name 'GitHub Actions (GitOps)'
+          git config --global user.email 'actions@github.com'
+          git add ledger-api-assignment/deploy/hardened/deployment.yaml
+          git commit -m "GitOps: Update ledger-api image to ${{ env.IMAGE_TAG }}"
+          git push

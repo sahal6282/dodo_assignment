@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: reporting-sa
+  namespace: payments
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reporting
+  namespace: payments
+  labels:
+    app: reporting
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reporting
+  template:
+    metadata:
+      labels:
+        app: reporting
+    spec:
+      serviceAccountName: reporting-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 3000
+        fsGroup: 2000
+      containers:
+        - name: client
+          image: curlimages/curl:8.8.0
+          command: ["sleep", "infinity"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          resources:
+            requests:
+              memory: "16Mi"
+              cpu: "50m"
+            limits:
+              memory: "32Mi"
+              cpu: "100m"
+          livenessProbe:
+            exec:
+              command: ["echo", "alive"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command: ["echo", "ready"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reporting
+  namespace: payments
+spec:
+  selector:
+    app: reporting
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080

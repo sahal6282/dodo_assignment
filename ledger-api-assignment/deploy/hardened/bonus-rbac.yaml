@@ -1,0 +1,32 @@
+# Developer: Read-only access to view logs and workload status
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: developer
+  namespace: payments
+rules:
+- apiGroups: ["", "apps"]
+  resources: ["pods", "pods/log", "deployments", "services", "configmaps"]
+  verbs: ["get", "list", "watch"]
+---
+# Operator: Can manage workloads (scale, restart, edit) but not manage RBAC or Secrets
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: operator
+  namespace: payments
+rules:
+- apiGroups: ["", "apps"]
+  resources: ["pods", "pods/exec", "pods/log", "deployments", "deployments/scale", "services", "configmaps", "ingresses"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+# Admin: Full control over the namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: namespace-admin
+  namespace: payments
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["*"]
