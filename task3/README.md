@@ -28,11 +28,11 @@ We implemented a **Default-Deny** `AuthorizationPolicy` across the entire `payme
 
 We created an explicit `ALLOW` rule that permits the `reporting-service` to talk to the `ledger-api`. This rule is keyed strictly on the `reporting-sa` SPIFFE ID.
 
-**[INSERT IMAGE 1 HERE: Screenshot of `istioctl authn tls-check` proving mTLS is STRICT]**
+![mTLS STRICT Mode](1.png)
 
-**[INSERT IMAGE 2 HERE: Screenshot showing a successful `curl` request from the authorized reporting-service]**
+![Authorized Service Curl Success](2.png)
 
-**[INSERT IMAGE 3 HERE: Screenshot showing a `403 Forbidden` or connection reset when an unauthorized pod attempts to curl the ledger-api]**
+![Unauthorized Pod Blocked by RBAC](3.png)
 
 ---
 
