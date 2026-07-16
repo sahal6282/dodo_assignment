@@ -3,6 +3,18 @@
 ## Overview
 This document outlines the design decisions and evidence of execution for hardening the `ledger-api` microservice to meet production-grade and PCI DSS baseline requirements.
 
+## Architecture
+
+```mermaid
+graph TD
+    A[Kubernetes API Server] -->|Admission Webhook| B(Kyverno Guardrails)
+    B -->|Validates| C{ledger-api Pod}
+    C -->|Security Context| D[Non-Root User]
+    C -->|Security Context| E[Read-Only RootFS]
+    C -->|Security Context| F[Capabilities Dropped]
+    C -->|Sealed Secrets| G[Secret Decryption]
+```
+
 ---
 
 ## Proof of Execution (Screenshots)

@@ -3,6 +3,22 @@
 ## Overview
 This document details the transition from manual deployments to a fully automated, secure software supply chain. We implemented a GitHub Actions pipeline that enforces security gates before building, signing, and deploying the image via GitOps (ArgoCD).
 
+## Supply Chain Architecture
+
+```mermaid
+graph LR
+    A[Code Commit] --> B{Security Scanners}
+    B -->|Semgrep SAST| C[Build Image]
+    B -->|Trivy SCA/CVE| C
+    B -->|Gitleaks Secrets| C
+    C --> D[Cosign Keyless Sign]
+    D --> E[Push to GHCR]
+    E --> F[Update Manifests]
+    F --> G(ArgoCD GitOps Sync)
+    G --> H[Production Cluster]
+    G -.->|Drift Detection & Self-Heal| H
+```
+
 ---
 
 ## 1. Security Gates & Fail Policies

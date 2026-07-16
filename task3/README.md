@@ -3,6 +3,17 @@
 ## Overview
 In this task, we implemented a robust **Zero-Trust Architecture** by installing the Istio Service Mesh. We completely abandoned IP-based trust in favor of cryptographically verified, identity-based access controls using **STRICT mTLS**.
 
+## Zero-Trust Architecture
+
+```mermaid
+graph TD
+    A[External Traffic] -->|HTTPS| B(Istio Ingress Gateway)
+    B -->|mTLS| C{ledger-api}
+    D[reporting-service] -->|mTLS + SPIFFE| C
+    E[Rogue Pod] -.->|Blocked by L7 Authz| C
+    E -.->|Blocked by L4 NetPol| C
+```
+
 ---
 
 ## 1. Zero-Trust Identity & Certificates
