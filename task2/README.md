@@ -32,7 +32,7 @@ To prove the image was signed by this workflow, you can run the following comman
 cosign verify --certificate-oidc-issuer https://token.actions.githubusercontent.com --certificate-identity https://github.com/<YOUR-USERNAME>/ledger-api-assignment/.github/workflows/secure-pipeline.yml@refs/heads/main ghcr.io/<YOUR-USERNAME>/ledger-api-assignment-ledger-api:latest
 ```
 
-**[INSERT IMAGE 1 HERE: Screenshot of successful `cosign verify` output]**
+![Cosign Verify Output](1.png)
 
 ---
 
@@ -45,14 +45,14 @@ ArgoCD is configured with `selfHeal: true`. This ensures that the cluster state 
 ### Proof of Drift Detection & Self-Heal
 If an attacker or operator attempts to manually alter the deployment in the cluster (e.g., bypassing the CI/CD pipeline to change the image or replicas), ArgoCD immediately detects the drift and overwrites the manual change.
 
-**[INSERT IMAGE 2 HERE: Screenshot of ArgoCD UI showing a "Healthy/Synced" state]**
+![ArgoCD Synced State](2.png)
 
-**[INSERT IMAGE 3 HERE: Screenshot showing a terminal where you manually edit a pod/deployment, and ArgoCD instantly reverting it back]**
+![Drift Detection and Self Heal](3.png)
 
 ---
 
 ## 4. Pipeline Execution Proof
 
-**[INSERT IMAGE 4 HERE: Screenshot of the GitHub Actions run showing all successful steps (Gitleaks, Semgrep, Trivy, Cosign, Push)]**
+![GitHub Actions Pipeline](4.png)
 
-**[INSERT IMAGE 5 HERE: Screenshot of the GitHub Security Tab showing the SARIF upload results (Bonus)]**
+![GitHub Security SARIF](5.png)

@@ -11,6 +11,11 @@ spec:
         resources:
           kinds:
             - Pod
+      exclude:
+        resources:
+          namespaces:
+            - argocd
+            - kube-system
       validate:
         message: "Running as root is not allowed. Set runAsNonRoot to true."
         pattern:
@@ -34,6 +39,11 @@ spec:
         resources:
           kinds:
             - Pod
+      exclude:
+        resources:
+          namespaces:
+            - argocd
+            - kube-system
       validate:
         message: "Using image tag ':latest' is not allowed."
         pattern:
